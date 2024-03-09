@@ -715,36 +715,13 @@ class EndScreen extends Phaser.Scene {
     }
 }
 
-let game;
-window.onload = function() {
-    // Define game configuration
-    let config = {
-        type: Phaser.AUTO,
-        width: 800,
-        height: 600,
-        scene: [StartScreen, ShopScreen, GameScreen, EndScreen]
-    };
+// Define game configuration
+let config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    scene: [StartScreen, ShopScreen, GameScreen, EndScreen]
+};
 
-    // Create a new Phaser game instance
-    game = new Phaser.Game(config);
-    window.focus()
-    resize();
-    window.addEventListener("resize", resize, false);
-}
-
-function resize() {
-    var canvas = document.querySelector("canvas");
-    var windowWidth = window.innerWidth;
-    var windowHeight = window.innerHeight;
-    var windowRatio = windowWidth / windowHeight;
-    var gameRatio = game.config.width / game.config.height;
-    if (windowRatio < gameRatio) {
-        // Adjust canvas width and height to fit the window width
-        canvas.style.width = windowWidth + "px";
-        canvas.style.height = (windowWidth / gameRatio) + "px";
-    } else {
-        // Adjust canvas width and height to fit the window height
-        canvas.style.width = (windowHeight * gameRatio) + "px";
-        canvas.style.height = windowHeight + "px";
-    }
-}
+// Create a new Phaser game instance
+let game = new Phaser.Game(config);
