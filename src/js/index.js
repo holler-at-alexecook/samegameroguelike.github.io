@@ -8,19 +8,6 @@ let gameOptions = {
     fallSpeed: 100
 }
 
-window.onload = function() {
-    let gameConfig = {
-        width: 900,
-        height: 900,
-        scene: playGame,
-        backgroundColor: 0x222222
-    }
-    game = new Phaser.Game(gameConfig);
-    window.focus()
-    resize();
-    window.addEventListener("resize", resize, false);
-}
-
 class SameGame {
     constructor(obj) {
         this.rows = obj.rows;
@@ -728,16 +715,21 @@ class EndScreen extends Phaser.Scene {
     }
 }
 
-// Define game configuration
-let config = {
-    type: Phaser.AUTO,
-    width: 800,
-    height: 600,
-    scene: [StartScreen, ShopScreen, GameScreen, EndScreen]
-};
+window.onload = function() {
+    // Define game configuration
+    let config = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 600,
+        scene: [StartScreen, ShopScreen, GameScreen, EndScreen]
+    };
 
-// Create a new Phaser game instance
-let game = new Phaser.Game(config);
+    // Create a new Phaser game instance
+    let game = new Phaser.Game(config);
+    window.focus()
+    resize();
+    window.addEventListener("resize", resize, false);
+}
 
 function resize() {
     var canvas = document.querySelector("canvas");
