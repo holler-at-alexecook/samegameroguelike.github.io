@@ -1,3 +1,17 @@
+class Player {
+    constructor() {
+        this.score = 0;
+        this.itemLimit = 3;
+        this.items = [];
+    }
+
+    // Method to reset player data
+    reset() {
+        this.score = 0;
+        this.items = [];
+    }
+}
+
 // Start screen scene
 class StartScreen extends Phaser.Scene {
     constructor() {
@@ -17,14 +31,15 @@ class StartScreen extends Phaser.Scene {
     }
 
     startGame() {
+        this.scene.get('ShopScreen').data.set('playerData', new Player());
         this.scene.start('MapScreen');
     }
 }
 
 // Game screen scene
-class MapScreen extends Phaser.Scene {
+class ShopScreen extends Phaser.Scene {
     constructor() {
-        super({ key: 'MapScreen' });
+        super({ key: 'ShopScreen' });
     }
 
     preload() {
@@ -32,12 +47,14 @@ class MapScreen extends Phaser.Scene {
     }
 
     create() {
+        this.playerData = this.data.get('playerData');
+        console.log(this.playerData);
         // Create game screen UI elements (e.g., game board, score display)
-        this.add.text(400, 100, 'Map Screen', { fontSize: '32px', fill: '#fff' }).setOrigin(0.5);
+        this.add.text(400, 100, 'Shop Screen', { fontSize: '32px', fill: '#fff' }).setOrigin(0.5);
         // Add your game logic here
-        this.mapButton = this.add.text(400, 500, 'Start Game', { fontSize: '24px', fill: '#fff' }).setOrigin(0.5);
-        this.mapButton.setInteractive();
-        this.mapButton.on('pointerdown', this.endGame, this);
+        this.shopButton = this.add.text(400, 500, 'Start Game', { fontSize: '24px', fill: '#fff' }).setOrigin(0.5);
+        this.shopButton.setInteractive();
+        this.shopButton.on('pointerdown', this.endGame, this);
     }
 
     endGame() {
@@ -90,7 +107,7 @@ class EndScreen extends Phaser.Scene {
     create() {
         // Create end screen UI elements (e.g., game over message, score display, restart button)
         this.add.text(400, 300, 'Game Over', { fontSize: '32px', fill: '#fff' }).setOrigin(0.5);
-        this.add.text(400, 400, 'Your Score: ' + finalScore, { fontSize: '24px', fill: '#fff' }).setOrigin(0.5);
+        //this.add.text(400, 400, 'Your Score: ' + finalScore, { fontSize: '24px', fill: '#fff' }).setOrigin(0.5);
         this.restartButton = this.add.text(400, 500, 'Restart', { fontSize: '24px', fill: '#fff' }).setOrigin(0.5);
         this.restartButton.setInteractive();
         this.restartButton.on('pointerdown', this.restartGame, this);
@@ -106,7 +123,7 @@ let config = {
     type: Phaser.AUTO,
     width: 800,
     height: 600,
-    scene: [StartScreen, MapScreen, GameScreen, EndScreen]
+    scene: [StartScreen, ShopScreen, GameScreen, EndScreen]
 };
 
 // Create a new Phaser game instance
