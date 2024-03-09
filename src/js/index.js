@@ -32,7 +32,7 @@ class StartScreen extends Phaser.Scene {
 
     startGame() {
         this.scene.get('ShopScreen').data.set('playerData', new Player());
-        this.scene.start('MapScreen');
+        this.scene.start('ShopScreen');
     }
 }
 
