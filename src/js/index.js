@@ -1,14 +1,3 @@
-// Define game configuration
-let config = {
-    type: Phaser.AUTO,
-    width: 800,
-    height: 600,
-    scene: [StartScreen, GameScreen, EndScreen]
-};
-
-// Create a new Phaser game instance
-let game = new Phaser.Game(config);
-
 // Start screen scene
 class StartScreen extends Phaser.Scene {
     constructor() {
@@ -76,3 +65,14 @@ class EndScreen extends Phaser.Scene {
         this.scene.start('StartScreen');
     }
 }
+
+// Define game configuration
+let config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    scene: [StartScreen, GameScreen, EndScreen]
+};
+
+// Create a new Phaser game instance
+let game = new Phaser.Game(config);
