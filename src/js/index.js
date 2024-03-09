@@ -50,7 +50,7 @@ class StartScreen extends Phaser.Scene {
 
         let startY = 200;
         characters.forEach((character, index) => {
-            let characterText = this.add.text(400, startY + index * 50, character.name + ' ' + chanracter.description, { fontSize: '24px', fill: '#fff' }).setOrigin(0.5);
+            let characterText = this.add.text(400, startY + index * 50, character.name + ' ' + character.description, { fontSize: '24px', fill: '#fff' }).setOrigin(0.5);
             characterText.setInteractive();
             characterText.on('pointerdown', () => this.selectCharacter(character));
         });
