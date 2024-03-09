@@ -38,7 +38,7 @@ class Item {
         if (this.triggers) {
             this.triggers.forEach((trigger) => {
                 emitter.on(trigger, trigger.effect, this);
-            }
+            });
         }
     }
 }
