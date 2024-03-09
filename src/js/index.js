@@ -1,3 +1,382 @@
+let game;
+let gameOptions = {
+    gemSize: 100,
+    boardOffset: {
+        x: 100,
+        y: 50
+    },
+    destroySpeed: 200,
+    fallSpeed: 100
+}
+
+window.onload = function() {
+    let gameConfig = {
+        width: 900,
+        height: 900,
+        scene: playGame,
+        backgroundColor: 0x222222
+    }
+    game = new Phaser.Game(gameConfig);
+    window.focus()
+    resize();
+    window.addEventListener("resize", resize, false);
+}
+
+class SameGame {
+    constructor(obj) {
+        this.rows = obj.rows;
+        this.columns = obj.columns;
+        this.items = obj.items;
+        this.fallDirection = 'down'; // Default fall direction
+        this.minConnected = 3; // Default minimum connected gems for removal
+    }
+
+    generateBoard() {
+        this.gameArray = [];
+        for (let i = 0; i < this.rows; i++) {
+            this.gameArray[i] = [];
+            for (let j = 0; j < this.columns; j++) {
+                let randomValue = Math.floor(Math.random() * this.items);
+                this.gameArray[i][j] = {
+                    value: randomValue,
+                    isEmpty: false,
+                    row: i,
+                    column: j
+                };
+            }
+        }
+    }
+
+    getRows() {
+        return this.rows;
+    }
+
+    getColumns() {
+        return this.columns;
+    }
+
+    isEmpty(row, column) {
+        return this.gameArray[row][column].isEmpty;
+    }
+
+    getValueAt(row, column) {
+        if (!this.validPick(row, column)) {
+            return false;
+        }
+        return this.gameArray[row][column].value;
+    }
+
+    getCustomDataAt(row, column) {
+        return this.gameArray[row][column].customData;
+    }
+
+    validPick(row, column) {
+        return (
+            row >= 0 &&
+            row < this.rows &&
+            column >= 0 &&
+            column < this.columns &&
+            this.gameArray[row] != undefined &&
+            this.gameArray[row][column] != undefined
+        );
+    }
+
+    setCustomData(row, column, customData) {
+        this.gameArray[row][column].customData = customData;
+    }
+
+    listConnectedItems(row, column) {
+        if (!this.validPick(row, column) || this.gameArray[row][column].isEmpty) {
+            return [];
+        }
+        this.colorToLookFor = this.gameArray[row][column].value;
+        this.floodFillArray = [];
+        this.floodFillArray.length = 0;
+        this.floodFill(row, column);
+        return this.floodFillArray;
+    }
+
+    countConnectedItems(row, column) {
+        return this.listConnectedItems(row, column).length;
+    }
+
+    removeConnectedItems(row, column) {
+        let items = this.listConnectedItems(row, column);
+        if (items.length >= this.minConnected) {
+            items.forEach(function (item) {
+                this.gameArray[item.row][item.column].isEmpty = true;
+            }.bind(this));
+        }
+    }
+
+    floodFill(row, column) {
+        if (!this.validPick(row, column) || this.gameArray[row][column].isEmpty) {
+            return;
+        }
+        if (this.gameArray[row][column].value == this.colorToLookFor && !this.alreadyVisited(row, column)) {
+            this.floodFillArray.push({
+                row: row,
+                column: column
+            });
+            this.floodFill(row + 1, column);
+            this.floodFill(row - 1, column);
+            this.floodFill(row, column + 1);
+            this.floodFill(row, column - 1);
+        }
+    }
+    /*
+    arrangeBoard() {
+        let result = [];
+        for (let i = this.getRows() - 2; i >= 0; i--) {
+            for (let j = 0; j < this.getColumns(); j++) {
+                let emptySpaces = this.emptySpacesBelow(i, j);
+                if (!this.isEmpty(i, j) && emptySpaces > 0) {
+                    this.swapItems(i, j, i + emptySpaces, j);
+                    result.push({
+                        row: i + emptySpaces,
+                        column: j,
+                        deltaRow: emptySpaces
+                    });
+                }
+            }
+        }
+        return result;
+    }
+    */
+    countEmptySpaces(row, column, direction) {
+        let result = 0;
+        switch (direction) {
+            case 'up':
+                for (let i = row - 1; i >= 0; i--) {
+                    if (this.isEmpty(i, column)) {
+                        result++;
+                    } else {
+                        break;
+                    }
+                }
+                break;
+            case 'right':
+                for (let j = column + 1; j < this.getColumns(); j++) {
+                    if (this.isEmpty(row, j)) {
+                        result++;
+                    } else {
+                        break;
+                    }
+                }
+                break;
+            case 'down':
+                for (let i = row + 1; i < this.getRows(); i++) {
+                    if (this.isEmpty(i, column)) {
+                        result++;
+                    } else {
+                        break;
+                    }
+                }
+                break;
+            case 'left':
+                for (let j = column - 1; j >= 0; j--) {
+                    if (this.isEmpty(row, j)) {
+                        result++;
+                    } else {
+                        break;
+                    }
+                }
+                break;
+        }
+        return result;
+    }
+    arrangeBoard() {
+        let result = [];
+        switch (this.fallDirection) {
+            case 'down':
+                for (let i = this.getRows() - 2; i >= 0; i--) {
+                    for (let j = 0; j < this.getColumns(); j++) {
+                        let emptySpaces = this.countEmptySpaces(i, j, this.fallDirection);
+                        if (!this.isEmpty(i, j) && emptySpaces > 0) {
+                            this.swapItems(i, j, i + emptySpaces, j);
+                            result.push({
+                                row: i + emptySpaces,
+                                column: j,
+                                deltaRow: emptySpaces
+                            });
+                        }
+                    }
+                }
+                break;
+            case 'up':
+                for (let i = 1; i < this.getRows(); i++) {
+                    for (let j = 0; j < this.getColumns(); j++) {
+                        let emptySpaces = this.countEmptySpaces(i, j, this.fallDirection);
+                        if (!this.isEmpty(i, j) && emptySpaces > 0) {
+                            this.swapItems(i, j, i - emptySpaces, j);
+                            result.push({
+                                row: i - emptySpaces,
+                                column: j,
+                                deltaRow: -emptySpaces
+                            });
+                        }
+                    }
+                }
+                break;
+            case 'left':
+                for (let j = 1; j < this.getColumns(); j++) {
+                    for (let i = 0; i < this.getRows(); i++) {
+                        let emptySpaces = this.countEmptySpaces(i, j, this.fallDirection);
+                        if (!this.isEmpty(i, j) && emptySpaces > 0) {
+                            this.swapItems(i, j, i, j - emptySpaces);
+                            result.push({
+                                row: i,
+                                column: j - emptySpaces,
+                                deltaColumn: -emptySpaces
+                            });
+                        }
+                    }
+                }
+                break;
+            case 'right':
+                for (let j = this.getColumns() - 2; j >= 0; j--) {
+                    for (let i = 0; i < this.getRows(); i++) {
+                        let emptySpaces = this.countEmptySpaces(i, j, this.fallDirection);
+                        if (!this.isEmpty(i, j) && emptySpaces > 0) {
+                            this.swapItems(i, j, i, j + emptySpaces);
+                            result.push({
+                                row: i,
+                                column: j + emptySpaces,
+                                deltaColumn: emptySpaces
+                            });
+                        }
+                    }
+                }
+                break;
+        }
+        return result;
+    }
+    /*
+    replenishBoard() {
+        let result = [];
+        for (let i = 0; i < this.getColumns(); i++) {
+            if (this.isEmpty(0, i)) {
+                let emptySpaces = this.emptySpacesBelow(0, i) + 1;
+                for (let j = 0; j < emptySpaces; j++) {
+                    let randomValue = Math.floor(Math.random() * this.items);
+                    result.push({
+                        row: j,
+                        column: i,
+                        deltaRow: emptySpaces
+                    });
+                    this.gameArray[j][i].value = randomValue;
+                    this.gameArray[j][i].isEmpty = false;
+                }
+            }
+        }
+        return result;
+    }
+    */
+    replenishBoard() {
+        let result = [];
+        for (let j = 0; j < this.getColumns(); j++) {
+            let startRow, deltaRow, startColumn, deltaColumn;
+            switch (this.fallDirection) {
+                case 'down':
+                    startRow = 0;
+                    deltaRow = 1;
+                    startColumn = j;
+                    deltaColumn = 0;
+                    break;
+                case 'up':
+                    startRow = this.getRows() - 1;
+                    deltaRow = -1;
+                    startColumn = j;
+                    deltaColumn = 0;
+                    break;
+                case 'left':
+                    startRow = 0;
+                    deltaRow = 0;
+                    startColumn = j;
+                    deltaColumn = -1;
+                    break;
+                case 'right':
+                    startRow = 0;
+                    deltaRow = 0;
+                    startColumn = this.getColumns() - 1;
+                    deltaColumn = 1;
+                    break;
+            }
+            if (this.isEmpty(startRow, startColumn)) {
+                let emptySpaces;
+                if (this.fallDirection === 'down' || this.fallDirection === 'up') {
+                    emptySpaces = this.countEmptySpaces(startRow, startColumn, this.fallDirection) + 1;
+                    for (let i = startRow, count = 0; count < emptySpaces; i += deltaRow, count++) {
+                        let randomValue = Math.floor(Math.random() * this.items);
+                        result.push({
+                            row: i,
+                            column: startColumn,
+                            deltaRow: emptySpaces
+                        });
+                        this.gameArray[i][startColumn].value = randomValue;
+                        this.gameArray[i][startColumn].isEmpty = false;
+                    }
+                } else if (this.fallDirection === 'left' || this.fallDirection === 'right') {
+                    emptySpaces = this.countEmptySpaces(startRow, startColumn, this.fallDirection) + 1;
+                    for (let j = startColumn, count = 0; count < emptySpaces; j += deltaColumn, count++) {
+                        let randomValue = Math.floor(Math.random() * this.items);
+                        result.push({
+                            row: startRow,
+                            column: j,
+                            deltaColumn: emptySpaces
+                        });
+                        this.gameArray[startRow][j].value = randomValue;
+                        this.gameArray[startRow][j].isEmpty = false;
+                    }
+                }
+            }
+        }
+        return result;
+    }
+    emptySpacesBelow(row, column) {
+        let result = 0;
+        if (row != this.getRows()) {
+            for (let i = row + 1; i < this.getRows(); i++) {
+                if (this.isEmpty(i, column)) {
+                    result++;
+                }
+            }
+        }
+        return result;
+    }
+
+    swapItems(row, column, row2, column2) {
+        let tempObject = Object.assign(this.gameArray[row][column]);
+        this.gameArray[row][column] = Object.assign(this.gameArray[row2][column2]);
+        this.gameArray[row2][column2] = Object.assign(tempObject);
+    }
+
+    alreadyVisited(row, column) {
+        let found = false;
+        this.floodFillArray.forEach(function (item) {
+            if (item.row == row && item.column == column) {
+                found = true;
+            }
+        });
+        return found;
+    }
+
+    // Set fall direction
+    setFallDirection(direction) {
+        this.fallDirection = direction;
+    }
+
+    // get fall direction
+    getFallDirection(direction) {
+        return this.fallDirection;
+    }
+
+    // Set minimum connected gems for removal
+    setMinConnected(minConnected) {
+        this.minConnected = minConnected;
+    }
+}
+
 // Create an event emitter object
 let emitter = new Phaser.Events.EventEmitter();
 
@@ -162,32 +541,167 @@ class ShopScreen extends Phaser.Scene {
 }
 
 // Game screen scene
-class GameScreen extends Phaser.Scene {
-    constructor() {
-        super({ key: 'GameScreen' });
+class GameScreen extends Phaser.Scene{
+    constructor(){
+        super("GameScreen");
+    }
+    preload(){
+        this.load.spritesheet("tiles", "assets/sprites/tiles.png", {
+            frameWidth: gameOptions.gemSize,
+            frameHeight: gameOptions.gemSize
+        });
+    }
+    create(){
+        // Create top area with goal number
+        this.goal = 500;
+        this.goalText = this.add.text(20, 20, 'Goal: ' + this.goal, { fontSize: '32px', fill: '#fff' });
+
+        // Create game area
+        this.score = 0;
+        this.scoreText = this.add.text(20, 60, 'Score: 0', { fontSize: '32px', fill: '#fff' });
+        this.sameGame = new SameGame({
+            rows: 8,
+            columns: 7,
+            items: 4
+        });
+        this.sameGame.generateBoard();
+        this.drawField();
+        this.canPick = true;
+        this.input.on("pointerdown", this.tileSelect, this);
+
+        // Create area for player items
+        this.playerItems = this.add.text(20, 600, 'Player Items', { fontSize: '32px', fill: '#fff' });
     }
 
-    preload() {
-        // Preload assets for the game screen (e.g., background image, gems)
+    // Function to draw the game field
+    drawField(){
+        this.poolArray = [];
+        for(let i = 0; i < this.sameGame.getRows(); i ++){
+            for(let j = 0; j < this.sameGame.getColumns(); j ++){
+                let gemX = gameOptions.boardOffset.x + gameOptions.gemSize * j + gameOptions.gemSize / 2;
+                let gemY = gameOptions.boardOffset.y + gameOptions.gemSize * i + gameOptions.gemSize / 2
+                let gem = this.add.sprite(gemX, gemY, "tiles", this.sameGame.getValueAt(i, j));
+                this.sameGame.setCustomData(i, j, gem);
+            }
+        }
     }
 
-    create() {
-        console.log('GameScreen.create', player);
-        // Create game screen UI elements (e.g., game board, score display)
-        this.add.text(400, 100, 'Game Screen', { fontSize: '32px', fill: '#fff' }).setOrigin(0.5);
-        // Add your game logic here
-        this.gameOverButton = this.add.text(400, 500, 'Game Over', { fontSize: '24px', fill: '#fff' }).setOrigin(0.5);
-        this.gameOverButton.setInteractive();
-        this.gameOverButton.on('pointerdown', this.endGame, this);
+    // Function to handle tile selection
+    tileSelect(pointer){
+        if(this.canPick){
+            let row = Math.floor((pointer.y - gameOptions.boardOffset.y) / gameOptions.gemSize);
+            let col = Math.floor((pointer.x - gameOptions.boardOffset.x) / gameOptions.gemSize);
+            if(this.sameGame.validPick(row, col)){
+                if(this.sameGame.countConnectedItems(row, col) > 2){
+                    this.canPick = false;
+                    let gemsToRemove = this.sameGame.listConnectedItems(row, col);
+                    let destroyed = 0;
+                    gemsToRemove.forEach(function(gem){
+                        destroyed ++;
+                        this.poolArray.push(this.sameGame.getCustomDataAt(gem.row, gem.column))
+                        this.tweens.add({
+                            targets: this.sameGame.getCustomDataAt(gem.row, gem.column),
+                            alpha: 0,
+                            duration: gameOptions.destroySpeed,
+                            callbackScope: this,
+                            onComplete: function(){
+                                destroyed --;
+                                if(destroyed == 0){
+                                    this.sameGame.removeConnectedItems(row, col)
+                                    this.makeGemsFall();
+                                }
+                            }
+                        });
+                    }.bind(this))
+                    // Calculate score based on the number of gems removed
+                    let gemsRemoved = gemsToRemove.length;
+                    let scoreDelta = gemsRemoved * 10; // Adjust as needed
+                    this.score += scoreDelta;
+
+                    // Update score text
+                    this.scoreText.setText('Score: ' + this.score);
+                }
+            }
+        }
     }
 
-    endGame() {
-        this.scene.start('EndScreen');
+    // Function to make gems fall
+    makeGemsFall(fallDirection = this.sameGame.getFallDirection()){
+        let fallingGems = 0;
+        let movements = this.sameGame.arrangeBoard(fallDirection);
+        let replenishMovements = this.sameGame.replenishBoard(fallDirection);
+        movements.forEach(function(movement){
+            fallingGems ++;
+            let targetX = this.sameGame.getCustomDataAt(movement.row, movement.column).x;
+            let targetY = this.sameGame.getCustomDataAt(movement.row, movement.column).y;
+            switch(fallDirection){
+                case 'up':
+                    targetY -= gameOptions.gemSize * movement.deltaRow;
+                    break;
+                case 'down':
+                    targetY += gameOptions.gemSize * movement.deltaRow;
+                    break;
+                case 'left':
+                    targetX -= gameOptions.gemSize * movement.deltaRow;
+                    break;
+                case 'right':
+                    targetX += gameOptions.gemSize * movement.deltaRow;
+                    break;
+            }
+            this.tweens.add({
+                targets: this.sameGame.getCustomDataAt(movement.row, movement.column),
+                x: targetX,
+                y: targetY,
+                duration: gameOptions.fallSpeed * movement.deltaRow,
+                callbackScope: this,
+                onComplete: function(){
+                    fallingGems --;
+                    if(fallingGems == 0){
+                        this.canPick = true
+                    }
+                }
+            })
+        }.bind(this))
+        replenishMovements.forEach(function(movement){
+            fallingGems ++;
+            let sprite = this.poolArray.pop();
+            sprite.alpha = 1;
+            let targetX = gameOptions.boardOffset.x + gameOptions.gemSize * movement.column + gameOptions.gemSize / 2;
+            let targetY = gameOptions.boardOffset.y + gameOptions.gemSize * movement.row + gameOptions.gemSize / 2;
+            switch(fallDirection){
+                case 'up':
+                    targetY -= gameOptions.gemSize * movement.deltaRow;
+                    break;
+                case 'down':
+                    targetY += gameOptions.gemSize * movement.deltaRow;
+                    break;
+                case 'left':
+                    targetX -= gameOptions.gemSize * movement.deltaRow;
+                    break;
+                case 'right':
+                    targetX += gameOptions.gemSize * movement.deltaRow;
+                    break;
+            }
+            sprite.y = targetY;
+            sprite.x = targetX;
+            sprite.setFrame(this.sameGame.getValueAt(movement.row, movement.column));
+            this.sameGame.setCustomData(movement.row, movement.column, sprite);
+            this.tweens.add({
+                targets: sprite,
+                y: targetY,
+                x: targetX,
+                duration: gameOptions.fallSpeed * movement.deltaRow,
+                callbackScope: this,
+                onComplete: function(){
+                    fallingGems --;
+                    if(fallingGems == 0){
+                        this.canPick = true
+                    }
+                }
+            });
+        }.bind(this))
     }
 
-    update() {
-        // Update game logic (e.g., handle player input, check game over conditions)
-    }
 }
 
 // End screen scene
@@ -225,3 +739,19 @@ let config = {
 
 // Create a new Phaser game instance
 let game = new Phaser.Game(config);
+
+function resize() {
+    var canvas = document.querySelector("canvas");
+    var windowWidth = window.innerWidth;
+    var windowHeight = window.innerHeight;
+    var windowRatio = windowWidth / windowHeight;
+    var gameRatio = game.config.width / game.config.height;
+    if(windowRatio < gameRatio){
+        canvas.style.width = windowWidth + "px";
+        canvas.style.height = (windowWidth / gameRatio) + "px";
+    }
+    else{
+        canvas.style.width = (windowHeight * gameRatio) + "px";
+        canvas.style.height = windowHeight + "px";
+    }
+}
