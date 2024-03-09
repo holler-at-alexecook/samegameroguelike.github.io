@@ -83,12 +83,12 @@ class playGame extends Phaser.Scene{
                         });
                     }.bind(this))
                     // Calculate score based on the number of gems removed
-                    let gemsRemoved = gemsToRemove.length;
-                    let scoreDelta = gemsRemoved * 10; // Adjust as needed
-                    this.score += scoreDelta;
+                let gemsRemoved = gemsToRemove.length;
+                let scoreDelta = gemsRemoved * 10; // Adjust as needed
+                this.score += scoreDelta;
 
-                    // Update score text
-                    this.scoreText.setText('Score: ' + this.score);
+                // Update score text
+                this.scoreText.setText('Score: ' + this.score);
                 }
             }
         }

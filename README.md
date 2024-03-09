@@ -18,6 +18,10 @@
 1. end the game
 
 # IDEAS
+## ABILITIES/CHARACTERS
+1. start with more money
+1. start with a larger item limit
+1. items cost X% less
 ## ITEMS
 1. pick axe - remove one gem
 1. compass - change the direction of how the gems fall - up down left or right

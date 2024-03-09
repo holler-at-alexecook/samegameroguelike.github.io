@@ -1,8 +1,30 @@
+let player;
+
+let characters = [
+    { 
+        name: 'Packrat', 
+        description: 'Has room for items to start with.',
+        opts: {
+            itemLimit: 4
+        }
+    },
+    { 
+        name: 'Money Bags', 
+        description: 'Has more cash to start with.',
+        opts: {
+            cash: 10
+        }
+    },
+    // Add more characters as needed
+];
+
 class Player {
-    constructor() {
-        this.score = 0;
-        this.itemLimit = 3;
-        this.items = [];
+    constructor(character = {}) {
+        opts = character.opts || {};
+        this.score = opts.score || 0;
+        this.itemLimit = opts.itemLimit || 3;
+        this.items = opts.items || [];
+        this.cash = opts.cash || 5;
     }
 
     // Method to reset player data
@@ -23,15 +45,20 @@ class StartScreen extends Phaser.Scene {
     }
 
     create() {
-        // Create start screen UI elements (e.g., title text, start button)
-        this.add.text(400, 300, 'Welcome to Gem Miner', { fontSize: '32px', fill: '#fff' }).setOrigin(0.5);
-        this.startButton = this.add.text(400, 400, 'Start Game', { fontSize: '24px', fill: '#fff' }).setOrigin(0.5);
-        this.startButton.setInteractive();
-        this.startButton.on('pointerdown', this.startGame, this);
+        // Display character selection UI elements (e.g., character options)
+        this.add.text(400, 100, 'Select Your Character', { fontSize: '32px', fill: '#fff' }).setOrigin(0.5);
+
+        let startY = 200;
+        characters.forEach((character, index) => {
+            let characterText = this.add.text(400, startY + index * 50, character.name + ' ' + chanracter.description, { fontSize: '24px', fill: '#fff' }).setOrigin(0.5);
+            characterText.setInteractive();
+            characterText.on('pointerdown', () => this.selectCharacter(character));
+        });
     }
 
-    startGame() {
-        this.scene.get('ShopScreen').data.set('playerData', new Player());
+    selectCharacter(character) {
+        // Save selected character data and transition to the next scene (e.g., game screen)
+        player = new Player(character);
         this.scene.start('ShopScreen');
     }
 }
@@ -47,8 +74,7 @@ class ShopScreen extends Phaser.Scene {
     }
 
     create() {
-        this.playerData = this.data.get('playerData');
-        console.log(this.playerData);
+        console.log('ShopScreen.create', player);
         // Create game screen UI elements (e.g., game board, score display)
         this.add.text(400, 100, 'Shop Screen', { fontSize: '32px', fill: '#fff' }).setOrigin(0.5);
         // Add your game logic here
@@ -77,6 +103,7 @@ class GameScreen extends Phaser.Scene {
     }
 
     create() {
+        console.log('GameScreen.create', player);
         // Create game screen UI elements (e.g., game board, score display)
         this.add.text(400, 100, 'Game Screen', { fontSize: '32px', fill: '#fff' }).setOrigin(0.5);
         // Add your game logic here
@@ -105,6 +132,7 @@ class EndScreen extends Phaser.Scene {
     }
 
     create() {
+        console.log('EndScreen.create', player);
         // Create end screen UI elements (e.g., game over message, score display, restart button)
         this.add.text(400, 300, 'Game Over', { fontSize: '32px', fill: '#fff' }).setOrigin(0.5);
         //this.add.text(400, 400, 'Your Score: ' + finalScore, { fontSize: '24px', fill: '#fff' }).setOrigin(0.5);
