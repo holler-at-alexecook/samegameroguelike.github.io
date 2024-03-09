@@ -25,6 +25,7 @@
 ## ITEMS
 1. pick axe - remove one gem
 1. compass - change the direction of how the gems fall - up down left or right
+    1. make them different items, broken compass
 1. colored gem - add to score when same colored gems are scored
 1. gold bars - multiply score
 1. shovel - change the location of two gems
