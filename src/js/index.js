@@ -715,6 +715,7 @@ class EndScreen extends Phaser.Scene {
     }
 }
 
+let game;
 window.onload = function() {
     // Define game configuration
     let config = {
@@ -725,7 +726,7 @@ window.onload = function() {
     };
 
     // Create a new Phaser game instance
-    let game = new Phaser.Game(config);
+    game = new Phaser.Game(config);
     window.focus()
     resize();
     window.addEventListener("resize", resize, false);
