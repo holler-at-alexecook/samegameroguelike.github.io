@@ -33,6 +33,8 @@ class playGame extends Phaser.Scene{
         });
     }
     create(){
+        this.score = 0;
+        this.scoreText = this.add.text(20, 20, 'Score: 0', { fontSize: '32px', fill: '#fff' });
         this.sameGame = new SameGame({
             rows: 8,
             columns: 7,
@@ -80,6 +82,13 @@ class playGame extends Phaser.Scene{
                             }
                         });
                     }.bind(this))
+                    // Calculate score based on the number of gems removed
+                    let gemsRemoved = gemsToRemove.length;
+                    let scoreDelta = gemsRemoved * 10; // Adjust as needed
+                    this.score += scoreDelta;
+
+                    // Update score text
+                    this.scoreText.setText('Score: ' + this.score);
                 }
             }
         }
