@@ -17,7 +17,35 @@ class StartScreen extends Phaser.Scene {
     }
 
     startGame() {
+        this.scene.start('MapScreen');
+    }
+}
+
+// Game screen scene
+class MapScreen extends Phaser.Scene {
+    constructor() {
+        super({ key: 'MapScreen' });
+    }
+
+    preload() {
+        // Preload assets for the game screen (e.g., background image, gems)
+    }
+
+    create() {
+        // Create game screen UI elements (e.g., game board, score display)
+        this.add.text(400, 100, 'Map Screen', { fontSize: '32px', fill: '#fff' }).setOrigin(0.5);
+        // Add your game logic here
+        this.mapButton = this.add.text(400, 500, 'Start Game', { fontSize: '24px', fill: '#fff' }).setOrigin(0.5);
+        this.mapButton.setInteractive();
+        this.mapButton.on('pointerdown', this.endGame, this);
+    }
+
+    endGame() {
         this.scene.start('GameScreen');
+    }
+
+    update() {
+        // Update game logic (e.g., handle player input, check game over conditions)
     }
 }
 
@@ -35,6 +63,13 @@ class GameScreen extends Phaser.Scene {
         // Create game screen UI elements (e.g., game board, score display)
         this.add.text(400, 100, 'Game Screen', { fontSize: '32px', fill: '#fff' }).setOrigin(0.5);
         // Add your game logic here
+        this.gameOverButton = this.add.text(400, 500, 'Game Over', { fontSize: '24px', fill: '#fff' }).setOrigin(0.5);
+        this.gameOverButton.setInteractive();
+        this.gameOverButton.on('pointerdown', this.endGame, this);
+    }
+
+    endGame() {
+        this.scene.start('EndScreen');
     }
 
     update() {
@@ -71,7 +106,7 @@ let config = {
     type: Phaser.AUTO,
     width: 800,
     height: 600,
-    scene: [StartScreen, GameScreen, EndScreen]
+    scene: [StartScreen, MapScreen, GameScreen, EndScreen]
 };
 
 // Create a new Phaser game instance
