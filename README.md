@@ -29,5 +29,4 @@
 1. gold bars - multiply score
 1. shovel - change the location of two gems
 1. dynamite - clear a area of gems
-1. headlamp/lantern - ???
-1. ??? - change number of gems needed to clear
+1. headlamp/lantern - change number of gems needed to clear
