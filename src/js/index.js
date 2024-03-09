@@ -20,7 +20,7 @@ let characters = [
 
 class Player {
     constructor(character = {}) {
-        opts = character.opts || {};
+        const opts = character.opts || {};
         this.score = opts.score || 0;
         this.itemLimit = opts.itemLimit || 3;
         this.items = opts.items || [];
