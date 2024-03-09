@@ -1,4 +1,3 @@
-let game;
 let gameOptions = {
     gemSize: 100,
     boardOffset: {
